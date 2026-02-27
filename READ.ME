@@ -1,0 +1,57 @@
+# 📈 Support and Resistance Analysis Tool
+
+A professional-grade tool to automatically identify, cluster, and visualize **Support and Resistance** levels for any financial asset.
+
+---
+
+## ✨ Features
+
+- **Automated Data Fetching**: Powered by `yfinance` for real-time and historical stock data.
+- **Advanced Level Detection**: Uses signal processing (`scipy.signal`) to identify local price extremas.
+- **Intelligent Clustering**: Merges nearby price levels (within 2%) into significant "zones" of interest.
+- **Interactive Charts**: Generates beautiful, responsive Plotly candlestick charts with annotated SR levels.
+- **Flexible Modes**: Support for both interactive prompting and direct command-line arguments.
+
+---
+
+## 🚀 Getting Started
+
+### 1. Prerequisites
+Ensure you have Python 3.8+ installed.
+
+### 2. Installation
+Clone this repository and install the dependencies:
+```powershell
+pip install -r requirements.txt
+```
+
+---
+
+## 🛠️ Usage
+
+### Option A: Interactive Mode (Recommended)
+Simply run the script and follow the on-screen prompts for Symbol and Period:
+```powershell
+python sr_analysis.py
+```
+
+### Option B: Command Line Arguments
+Analyze a specific stock instantly by passing arguments:
+```powershell
+# Analyze Microsoft for 1 year
+python sr_analysis.py --symbol MSFT --period 1y
+
+# Analyze Tesla for 6 months
+python sr_analysis.py --symbol TSLA --period 6mo
+```
+
+### Valid Time Periods
+`1d`, `5d`, `1mo`, `3mo`, `6mo`, `1y`, `2y`, `5y`, `10y`, `ytd`, `max`
+
+---
+
+## 📊 How it Works
+1. **Extraction**: Fetches High/Low price data.
+2. **Identification**: Detects peaks (Resistance) and troughs (Support).
+3. **Refinement**: Clusters levels that are close to each other to find the most "respected" price zones.
+4. **Visualization**: Plots data on an interactive candlestick chart.
