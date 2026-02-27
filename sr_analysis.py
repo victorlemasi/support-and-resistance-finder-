@@ -145,15 +145,47 @@ def main():
     
     print(f"\nFound {len(res_levels)} Resistance levels and {len(supp_levels)} Support levels.")
     
-    if res_levels or supp_levels:
-        print("\n" + "="*40)
-        print(f"{'Type':<12} | {'Price':<10} | {'Confirmations':<13}")
-        print("-" * 40)
+    current_price = df['Close'].iloc[-1]
+    print(f"Current Price ({symbol}): {current_price:.2f}")
+
+    print("\n" + "="*45)
+    print(f"{'TYPE':<12} | {'PRICE':<10} | {'CONFIRMATIONS':<13}")
+    print("-" * 45)
+    
+    # Resistance Table
+    if res_levels:
         for price, count in sorted(res_levels, key=lambda x: x[0], reverse=True):
             print(f"{'Resistance':<12} | {price:<10.2f} | {count:<13}")
+    else:
+        print(f"{'Resistance':<12} | {'None':<10} | {'-'*13}")
+        
+    print("-" * 45)
+    
+    # Support Table
+    if supp_levels:
         for price, count in sorted(supp_levels, key=lambda x: x[0], reverse=True):
             print(f"{'Support':<12} | {price:<10.2f} | {count:<13}")
-        print("="*40)
+    else:
+        print(f"{'Support':<12} | {'None':<10} | {'-'*13}")
+    print("="*45)
+
+    # Market Summary Logic
+    nearest_res = min([r[0] for r in res_levels], key=lambda x: abs(x - current_price)) if res_levels else None
+    nearest_supp = min([s[0] for s in supp_levels], key=lambda x: abs(x - current_price)) if supp_levels else None
+    
+    print("\n>>> Market Summary:")
+    if nearest_res:
+        dist = ((nearest_res - current_price) / current_price) * 100
+        print(f" - Nearest Resistance: {nearest_res:.2f} ({dist:+.2f}% from current)")
+    if nearest_supp:
+        dist = ((nearest_supp - current_price) / current_price) * 100
+        print(f" - Nearest Support:    {nearest_supp:.2f} ({dist:+.2f}% from current)")
+    
+    if not nearest_res and not nearest_supp:
+        print(" - No significant levels detected in this timeframe.")
+    elif nearest_res and nearest_supp:
+        range_pct = ((nearest_res - nearest_supp) / nearest_supp) * 100
+        print(f" - Current Trading Range: {range_pct:.2f}%")
     
     print("\nOpening interactive chart...")
     plot_sr(df, symbol, res_levels, supp_levels, interval)
