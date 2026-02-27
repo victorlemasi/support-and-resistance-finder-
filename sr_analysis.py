@@ -50,6 +50,7 @@ def find_sr_levels(df, distance=None, prominence_pct=0.1):
 def cluster_levels(levels, threshold_pct=0.015):
     """
     Group nearby levels together to find significant zones.
+    Returns a list of (average_price, hit_count) sorted by price.
     """
     if len(levels) == 0:
         return []
@@ -63,10 +64,10 @@ def cluster_levels(levels, threshold_pct=0.015):
         if (levels[i] - avg) / avg < threshold_pct:
             current_cluster.append(levels[i])
         else:
-            clustered.append(sum(current_cluster) / len(current_cluster))
+            clustered.append((sum(current_cluster) / len(current_cluster), len(current_cluster)))
             current_cluster = [levels[i]]
     
-    clustered.append(sum(current_cluster) / len(current_cluster))
+    clustered.append((sum(current_cluster) / len(current_cluster), len(current_cluster)))
     return clustered
 
 def plot_sr(df, symbol, resistance, support, interval):
@@ -79,14 +80,14 @@ def plot_sr(df, symbol, resistance, support, interval):
                 name='Price Action')])
 
     # Add Resistance Lines (Red)
-    for level in resistance:
-        fig.add_hline(y=level, line_dash="dash", line_color="red", 
-                      annotation_text=f"Res: {level:.2f}", annotation_position="top right")
+    for price, count in resistance:
+        fig.add_hline(y=price, line_dash="dash", line_color="red", 
+                      annotation_text=f"Res: {price:.2f} ({count}x)", annotation_position="top right")
 
     # Add Support Lines (Green)
-    for level in support:
-        fig.add_hline(y=level, line_dash="dash", line_color="green", 
-                      annotation_text=f"Supp: {level:.2f}", annotation_position="bottom right")
+    for price, count in support:
+        fig.add_hline(y=price, line_dash="dash", line_color="green", 
+                      annotation_text=f"Supp: {price:.2f} ({count}x)", annotation_position="bottom right")
 
     fig.update_layout(
         title=f'{symbol} SR Levels ({interval} interval)',
@@ -143,10 +144,16 @@ def main():
     supp_levels = cluster_levels(raw_supp)
     
     print(f"\nFound {len(res_levels)} Resistance levels and {len(supp_levels)} Support levels.")
-    if res_levels:
-        print("Resistances:", [round(x, 2) for x in res_levels])
-    if supp_levels:
-        print("Supports:", [round(x, 2) for x in supp_levels])
+    
+    if res_levels or supp_levels:
+        print("\n" + "="*40)
+        print(f"{'Type':<12} | {'Price':<10} | {'Confirmations':<13}")
+        print("-" * 40)
+        for price, count in sorted(res_levels, key=lambda x: x[0], reverse=True):
+            print(f"{'Resistance':<12} | {price:<10.2f} | {count:<13}")
+        for price, count in sorted(supp_levels, key=lambda x: x[0], reverse=True):
+            print(f"{'Support':<12} | {price:<10.2f} | {count:<13}")
+        print("="*40)
     
     print("\nOpening interactive chart...")
     plot_sr(df, symbol, res_levels, supp_levels, interval)
